@@ -1,0 +1,25 @@
+# Project Analysis Initialization
+
+You are analyzing a software project to create comprehensive documentation.
+
+# Project Structure
+
+Here is the complete file tree of the project:
+
+{{ file_tree }}
+
+Total files: {{ total_files }}
+Total size: {{ total_size | filesizeformat }}
+
+# Your Task
+
+You will iteratively explore this codebase to understand its purpose, architecture, and functionality. In each iteration, you can select files to read and analyze. After multiple iterations, you'll generate a comprehensive initial description.
+
+# Process
+
+1. You can request to read up to {{ batch_max_files }} files per iteration
+2. The total combined size of selected files must not exceed {{ batch_max_chars }} characters
+3. You have up to 5 iterations to explore the codebase
+4. When you have enough information, return an empty file list to proceed to documentation generation
+
+Start by examining key files that will help you understand the project's purpose and structure (e.g., README, package.json, pyproject.toml, main entry points).

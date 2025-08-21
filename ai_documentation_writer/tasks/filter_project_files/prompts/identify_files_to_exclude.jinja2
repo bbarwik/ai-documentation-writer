@@ -1,0 +1,77 @@
+# File Filtering Analysis
+
+You are analyzing a software project to identify files that should be excluded from generation of documentation.
+The main purpose of this task is to reduce size of the codebase to less than {{ format_size(max_all_files_size) }}.
+
+# Context
+
+File samples have been provided in separate messages above for files requiring review.
+The file samples are selected chunks of the files that are large or contain encoded data.
+Each file has 5 chunks of 200 characters each, first chunk is the first 200 characters, last chunk is the last 200 characters, and the other 3 chunks are in the middle of the file.
+
+# Project Structure (file tree)
+
+{{ file_tree }}
+
+Total files: {{ total_files }}
+Total size: {{ format_size(total_size) }}
+
+# Files Requiring Review
+
+The following files were flagged for review (large files >10KB or containing encoded data blocks):
+
+{% for file_path, (file_size, file_sample) in files_to_review.items() %}
+- {{ file_path }} ({{ format_size(file_size) }})
+{% endfor %}
+{% if files_to_review | length == 0 %}
+No files require special review.
+{% endif %}
+
+# Your Task
+
+Based on the project structure, the file samples provided and the project structure, identify files that should be EXCLUDED from documentation.
+
+## Exclusion Rules
+
+- Exclude files which won't be useful when it comes to generating documentation.
+- Exclude large files in the first place
+- Target very speficic files and directories, do not remove entire directories if they may contain useful files (e.g. tests).
+- Remember that primary task is to reduce size of the codebase to less than {{ format_size(max_all_files_size) }}
+
+## Exclusion Criteria
+
+- **Test fixtures** - YAML/JSON with recorded responses, mock data, test datasets
+- **Generated code** - Build outputs, compiled assets, minified files, transpiled code
+- **Vendor libraries** - node_modules, vendor, third-party packages
+- **Encoded data** - Files with large base64/hex blocks, binary content
+- **Cache files** - .cache, tmp, __pycache__, .pytest_cache
+- **Data files** - CSV, SQL dumps, logs, fixtures with embedded data
+- **Lock files** - package-lock.json, yarn.lock, poetry.lock
+- **IDE metadata** - .vscode, .idea, editor configuration
+- **Test reports** - coverage/, htmlcov/, test-results/
+- **Build artifacts** - dist/, build/, *.egg-info
+- **Large artifacts** - large artifacts that are not useful for documentation generation
+- **Other files** - files that are not source code, configuration, documentation, tests, and are not useful for documentation generation
+
+## Files to Preserve
+
+- Source code (*.py, *.js, *.ts, *.go, *.rs, etc.)
+- Configuration (package.json, pyproject.toml, etc.)
+- Documentation (README, docs/, *.md)
+- Core application logic
+- API definitions and schemas
+- Examples of usage
+- Tests that demonstrate usage (not fixtures)
+
+# Required Output
+
+Provide a structured response with:
+
+1. **reasoning**: Detailed, 500-1000 words explanation of your filtering strategy based on the project structure, file samples and the exclusion criteria.
+2. **exclude_patterns**: Glob patterns for files to exclude
+3. **exclude_directories**: Directory paths to exclude entirely  
+4. **exclude_specific_files**: Individual files to exclude
+
+Be aggressive in filtering - documentation generation requires only source code and configuration.
+Filter only files and directories which are present in the project structure file tree. Do not return filters for non-existent files or directories.
+For example, do not propose to exclude __pycache__ directory if it is not present in the project structure file tree.

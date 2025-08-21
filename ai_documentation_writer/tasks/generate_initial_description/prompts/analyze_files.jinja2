@@ -1,0 +1,31 @@
+# Files Content
+
+You were provided with {{ files|length }} files in previous messages according to your request:
+{% for file_path in files %}
+- {{ file_path }}
+{% endfor %}
+
+# Analysis Task
+
+Analyze these files and provide a very detailed analysis (at least 1000 words and up to 10000 words) of the project and files which you read:
+1. Detailed analysis of each file you requested, explaining purpose and content of the file
+2. Key insights about the project's functionality
+3. Important architectural patterns or design decisions
+4. Dependencies and technology stack details
+5. Any notable features or capabilities
+
+Focus on understanding how these files contribute to the overall project structure and purpose.
+The file contents won't be available to you again, so you should analyze them very carefully and provide a very detailed analysis of the project and files which you read.
+
+Write in a professional, very detailed technical style suitable for highly experienced developers and technical stakeholders.
+Do not include basic information about the project, like "This is a project about..." or "This is a project that...".
+Do not include obvious and trivial information, you are writing this document for highly technical audience with 10+ years of experience in software development.
+
+Use plain english and markdown formatting limited to:
+- headers, but without top level header (#), so you can use ##, ###, #### headers.
+- any types of lists with sublists, enumerated or bullet points.
+- code blocks, but without any graphical representations, just code snippets.
+- bold and italic text.
+- inline code snippets.
+Do not include any other text than the analysis of the project. 
+Start your response with an analysis of the project.

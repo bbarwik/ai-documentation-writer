@@ -1,0 +1,169 @@
+# Analysis Task for {{ directory_path }} Directory
+
+# Files Provided
+
+You were provided with files from this directory in previous messages.
+Each file was marked with `# FILE: <path>` header followed by its content.
+
+{% if file_paths %}
+The files to analyze in this batch are:
+{% for file_path in file_paths %}
+- {{ file_path }}
+{% endfor %}
+{% else %}
+There are no files to analyze in this batch.
+{% endif %}
+
+{% if is_last_batch %}
+# IMPORTANT: This is the FINAL batch - You MUST provide both file AND directory analysis
+
+After analyzing the individual files, you MUST also provide a comprehensive directory-level analysis that synthesizes ALL files processed across ALL batches (including any previously analyzed files whose summaries are in the context).
+{% else %}
+# IMPORTANT: This is NOT the final batch - Provide ONLY file analysis
+
+You must analyze ONLY the files listed above. Do NOT provide directory_analysis in your response (set it to null).
+More files from this directory will be analyzed in subsequent batches.
+{% endif %}
+
+# Part 1: File Analysis Requirements (REQUIRED)
+
+Provide a **comprehensive technical analysis** for EACH file listed above.
+
+For each file, create an analysis with:
+
+1. **file_path**: The exact file path as listed above (critical for matching)
+
+2. **summary**: Detailed technical summary (50-500 words) covering:
+   - Core functionality and architectural role
+   - Implementation approach and design decisions
+   - Integration points with other components
+   - Data structures and algorithms used
+   - Error handling and edge cases
+   - The length of analysis should depend on the size of the file. Small files should have a short analysis (50 words), large files should have a longer analysis (up to 500 words).
+
+3. **key_elements**: Significant technical elements:
+   - Major classes, functions, or constants
+   - Design patterns implemented
+   - Critical algorithms or data structures
+   - Performance-critical sections
+   - Important exports or public APIs
+
+4. **dependencies**: All imports and their purposes:
+   - External library dependencies
+   - Internal module dependencies
+   - Dependency injection patterns
+
+5. **documentation_usage**: Detailed analysis of how this file should be used when generating documentation:
+   - Is this file critical for understanding the project?
+   - What aspects should be highlighted in documentation?
+   - How does it contribute to the overall system architecture?
+   - Should code examples from this file be included in docs?
+   - What level of detail is needed when documenting this file?
+
+{% if is_last_batch %}
+# Part 2: Directory Analysis Requirements (REQUIRED for final batch)
+
+Create a **comprehensive architectural analysis** (100-2000 words) synthesizing ALL components in this directory, including:
+- Files analyzed in this batch
+- Files analyzed in previous batches (their summaries are in the context)
+- Any subdirectories (their summaries are in the context)
+- The length of analysis should depend on the size of the directory. Small directories should have a short analysis (100 words), large directories should have a longer analysis (up to 2000 words).
+
+Your directory analysis must include:
+
+1. **summary**: Comprehensive architectural overview covering:
+   - Primary architectural responsibility and boundaries
+   - Design patterns and architectural styles employed
+   - Integration strategy with parent and sibling directories
+   - Data flow and control flow patterns
+   - Coupling and cohesion analysis
+   - Compliance with SOLID principles
+   - Performance and scalability characteristics
+   - Technical debt and refactoring opportunities
+
+2. **main_components**: List of architecturally significant elements:
+   - Core modules/classes and their responsibilities
+   - Service boundaries and interfaces
+   - Data models and domain entities
+   - Infrastructure components
+   - Cross-cutting concerns (logging, error handling, etc.)
+
+3. **patterns**: Identified patterns with technical justification:
+   - Design patterns (Factory, Strategy, Observer, etc.)
+   - Architectural patterns (MVC, Repository, etc.)
+   - Code organization patterns
+   - Error handling patterns
+   - Testing patterns
+
+4. **documentation_usage**: Detailed analysis for documentation generation:
+   - How critical is this directory for project documentation?
+   - What architectural aspects must be documented?
+   - Which components should be featured prominently?
+   - What diagrams or visualizations would be helpful?
+   - How should this directory be presented in the documentation structure?
+   - What level of technical depth is appropriate?
+   - Key integration points that must be documented
+{% endif %}
+
+# Quality Standards
+
+**Target Audience**: Senior engineers and architects with 10+ years of experience
+
+Focus on:
+- Non-obvious architectural decisions and their rationale
+- Performance implications and optimization opportunities
+- Coupling and cohesion analysis
+- SOLID principle adherence or violations
+- Potential refactoring opportunities
+- Security considerations if applicable
+- Architectural trade-offs and alternatives considered
+- System qualities: performance, scalability, maintainability, testability
+
+Skip:
+- Basic syntax explanations
+- Obvious functionality descriptions
+- Tutorial-style content
+- Language feature explanations
+- Basic programming concepts or patterns
+
+**Token cost is not a concern** - provide exhaustive technical analysis.
+
+# Output Constraints
+
+Your response must:
+- Start directly with the structured data
+- Include ALL files from the list above in file_summaries
+{% if is_last_batch %}
+- Include comprehensive directory_analysis that synthesizes ALL files and subdirectories
+{% else %}
+- Set directory_analysis to null (this is not the final batch)
+{% endif %}
+- Use consistent file paths for accurate matching
+- Provide substantive analysis, not superficial descriptions
+- Connect technical details to architectural significance
+- Use plain english without markdown formatting. Only **bold** and *italic* formatting is allowed.
+
+Do NOT include:
+- Personal opinions without technical justification
+- External links or references
+- ASCII art or diagrams
+- Meta-commentary about the task
+- Explanations of basic programming concepts
+
+# Critical Reminder
+
+{% if is_last_batch %}
+This is the FINAL batch for this directory. You MUST provide:
+1. file_summaries: Analysis of files in this batch
+2. directory_analysis: Comprehensive synthesis of the ENTIRE directory (all files from all batches + subdirectories)
+
+The directory_analysis is your opportunity to synthesize a comprehensive architectural understanding of this entire directory.
+{% else %}
+This is an intermediate batch. You MUST provide:
+1. file_summaries: Analysis of files in this batch ONLY
+2. directory_analysis: Must be null (not the final batch)
+
+More files will be analyzed in subsequent batches.
+{% endif %}
+
+Start your response directly with the DirectoryAndFilesAnalysis structured data.
