@@ -4,11 +4,10 @@ import asyncio
 from collections import defaultdict
 from pathlib import Path
 
+from ai_pipeline_core import pipeline_task
 from ai_pipeline_core.llm import AIMessages
 from ai_pipeline_core.logging import get_pipeline_logger
 from ai_pipeline_core.prompt_manager import PromptManager
-from ai_pipeline_core.tracing import trace
-from prefect import task
 
 from ai_documentation_writer.documents.flow.codebase_documentation import (
     CodebaseDocumentationDocument,
@@ -22,7 +21,7 @@ from ai_documentation_writer.documents.flow.project_files import (
 from ai_documentation_writer.documents.flow.project_initial_description import (
     ProjectInitialDescriptionDocument,
 )
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 
 from .document_codebase_directory import document_codebase_directory_task
 
@@ -71,12 +70,11 @@ def get_directories_by_depth(dir_files: dict[str, dict[str, str]]) -> dict[int, 
     return dict(depth_dirs)
 
 
-@task
-@trace
+@pipeline_task
 async def document_codebase_task(
     project_files_doc: ProjectFilesDocument,
     initial_description_doc: ProjectInitialDescriptionDocument,
-    flow_options: FlowOptions,
+    flow_options: ProjectFlowOptions,
 ) -> CodebaseDocumentationDocument:
     """Document the entire codebase with detailed file and directory summaries.
 

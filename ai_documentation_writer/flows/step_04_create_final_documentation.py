@@ -1,10 +1,6 @@
 """Flow for creating final documentation from codebase analysis."""
 
-from ai_pipeline_core.documents import DocumentList
-from ai_pipeline_core.flow import FlowConfig
-from ai_pipeline_core.logging import get_pipeline_logger
-from ai_pipeline_core.tracing import trace
-from prefect import flow
+from ai_pipeline_core import DocumentList, FlowConfig, get_pipeline_logger, pipeline_flow
 
 from ai_documentation_writer.documents.flow.codebase_documentation import (
     CodebaseDocumentationDocument,
@@ -15,7 +11,7 @@ from ai_documentation_writer.documents.flow.final_documentation import (
 from ai_documentation_writer.documents.flow.project_initial_description import (
     ProjectInitialDescriptionDocument,
 )
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 from ai_documentation_writer.tasks.create_final_documentation import (
     create_final_documentation_task,
 )
@@ -30,10 +26,9 @@ class CreateFinalDocumentationConfig(FlowConfig):
     OUTPUT_DOCUMENT_TYPE = FinalDocumentationDocument
 
 
-@flow(flow_run_name="create_final_documentation-{project_name}")
-@trace
+@pipeline_flow
 async def create_final_documentation(
-    project_name: str, documents: DocumentList, flow_options: FlowOptions = FlowOptions()
+    project_name: str, documents: DocumentList, flow_options: ProjectFlowOptions
 ) -> DocumentList:
     """Create final documentation from codebase analysis.
 

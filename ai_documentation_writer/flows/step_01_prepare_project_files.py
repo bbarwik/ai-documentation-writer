@@ -3,11 +3,7 @@
 import tempfile
 from pathlib import Path
 
-from ai_pipeline_core.documents import DocumentList
-from ai_pipeline_core.flow import FlowConfig
-from ai_pipeline_core.logging import get_pipeline_logger
-from ai_pipeline_core.tracing import trace
-from prefect import flow
+from ai_pipeline_core import DocumentList, FlowConfig, get_pipeline_logger, pipeline_flow
 
 from ai_documentation_writer.documents.flow.project_files import ProjectFilesDocument
 from ai_documentation_writer.documents.flow.user_input import (
@@ -15,7 +11,7 @@ from ai_documentation_writer.documents.flow.user_input import (
     UserInputDocument,
     UserInputFiles,
 )
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 from ai_documentation_writer.tasks.prepare_project_files import (
     clone_repository_task,
     select_project_files_task,
@@ -31,10 +27,9 @@ class PrepareProjectFilesConfig(FlowConfig):
     OUTPUT_DOCUMENT_TYPE = ProjectFilesDocument
 
 
-@flow(flow_run_name="prepare_project_files-{project_name}")
-@trace
+@pipeline_flow
 async def prepare_project_files(
-    project_name: str, documents: DocumentList, flow_options: FlowOptions = FlowOptions()
+    project_name: str, documents: DocumentList, flow_options: ProjectFlowOptions
 ) -> DocumentList:
     """Prepare project files for documentation generation.
 
@@ -51,12 +46,20 @@ async def prepare_project_files(
     # Get input documents
     input_docs = PrepareProjectFilesConfig.get_input_documents(documents)
 
-    # Extract user input using as_pydantic_model
+    # Extract user input - check both UserInputDocument and flow_options
+    # This maintains compatibility with both old and new patterns
     user_input_doc = input_docs.get_by_name(UserInputFiles.USER_INPUT.value)
-    if not user_input_doc:
-        raise ValueError("User input document not found")
-
-    user_input_data = user_input_doc.as_pydantic_model(UserInputData)
+    if user_input_doc:
+        # Use document if available (maintains backward compatibility)
+        user_input_data = user_input_doc.as_pydantic_model(UserInputData)
+    else:
+        # Fall back to flow_options (new pattern)
+        user_input_data = UserInputData(
+            target=flow_options.target,
+            branch=flow_options.branch,
+            tag=flow_options.tag,
+            instructions=flow_options.instructions,
+        )
 
     # Create temporary directory for git cloning
     with tempfile.TemporaryDirectory() as temp_dir:

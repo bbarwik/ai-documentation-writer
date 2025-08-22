@@ -1,10 +1,9 @@
 """Task for creating final documentation from codebase analysis."""
 
+from ai_pipeline_core import pipeline_task
 from ai_pipeline_core.llm import AIMessages, ModelOptions, generate
 from ai_pipeline_core.logging import get_pipeline_logger
 from ai_pipeline_core.prompt_manager import PromptManager
-from ai_pipeline_core.tracing import trace
-from prefect import task
 
 from ai_documentation_writer.documents.flow.codebase_documentation import (
     CodebaseDocumentationDocument,
@@ -18,7 +17,7 @@ from ai_documentation_writer.documents.flow.final_documentation import (
 from ai_documentation_writer.documents.flow.project_initial_description import (
     ProjectInitialDescriptionDocument,
 )
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 
 logger = get_pipeline_logger(__name__)
 prompt_manager = PromptManager(__file__)
@@ -83,12 +82,11 @@ def build_file_tree_markdown(directory_analysis: DirectoryAnalysis, indent: int 
     return "\n".join(lines)
 
 
-@task
-@trace
+@pipeline_task
 async def create_final_documentation_task(
     codebase_doc: CodebaseDocumentationDocument,
     initial_description_doc: ProjectInitialDescriptionDocument,
-    flow_options: FlowOptions,
+    flow_options: ProjectFlowOptions,
 ) -> list[FinalDocumentationDocument]:
     """Create final documentation from codebase analysis.
 
@@ -115,26 +113,7 @@ async def create_final_documentation_task(
     # Load initial description
     initial_description = initial_description_doc.as_text()
 
-    # Generate README
-    logger.info("Generating README.md")
-    readme_prompt = prompt_manager.get(
-        "generate_readme.jinja2",
-        initial_description=initial_description,
-        file_tree=file_tree,
-        root_summary=codebase_analysis.summary,
-    )
-
-    readme_response = await generate(
-        model=flow_options.core_model,
-        messages=AIMessages([readme_prompt]),
-        options=ModelOptions(reasoning_effort="high"),
-    )
-    readme_content = str(readme_response).strip()
-
-    # Generate DOCUMENTATION
-    logger.info("Generating DOCUMENTATION.md")
-
-    # Prepare file summaries for documentation
+    # Prepare file summaries text for context
     file_summaries_text = []
     for file_analysis in all_file_summaries:
         file_summaries_text.append(f"## {file_analysis.file_path}\n\n{file_analysis.summary}")
@@ -147,24 +126,6 @@ async def create_final_documentation_task(
             for dep in file_analysis.dependencies:
                 file_summaries_text.append(f"- {dep}")
         file_summaries_text.append("")  # Empty line between files
-
-    documentation_prompt = prompt_manager.get(
-        "generate_documentation.jinja2",
-        initial_description=initial_description,
-        file_tree=file_tree,
-        root_summary=codebase_analysis.summary,
-        file_summaries="\n".join(file_summaries_text),
-    )
-
-    documentation_response = await generate(
-        model=flow_options.core_model,
-        messages=AIMessages([documentation_prompt]),
-        options=ModelOptions(reasoning_effort="high"),
-    )
-    documentation_content = str(documentation_response).strip()
-
-    # Generate DEVELOPER_GUIDE
-    logger.info("Generating DEVELOPER_GUIDE.md")
 
     # Prepare directory structure information
     directory_structure = []
@@ -186,19 +147,54 @@ async def create_final_documentation_task(
 
     build_directory_info(codebase_analysis)
 
-    developer_guide_prompt = prompt_manager.get(
-        "generate_developer_guide.jinja2",
+    # Create a shared context with ALL project information
+    # This context will be cached and reused for all three documentation generations
+    shared_context_prompt = prompt_manager.get(
+        "shared_context.jinja2",
         initial_description=initial_description,
         file_tree=file_tree,
         root_summary=codebase_analysis.summary,
+        file_summaries="\n".join(file_summaries_text),
         directory_structure="\n".join(directory_structure),
         main_components=codebase_analysis.main_components,
         patterns=codebase_analysis.patterns,
     )
 
+    # Create the shared context that will be reused (and cached) for all AI calls
+    shared_context = AIMessages([shared_context_prompt])
+
+    # Generate README
+    logger.info("Generating README.md")
+    readme_instructions = prompt_manager.get("readme_instructions.jinja2")
+
+    readme_response = await generate(
+        model=flow_options.core_model,
+        context=shared_context,  # Use shared context for caching
+        messages=AIMessages([readme_instructions]),  # Only instructions, no data
+        options=ModelOptions(reasoning_effort="high"),
+    )
+    readme_content = str(readme_response).strip()
+
+    # Generate DOCUMENTATION
+    logger.info("Generating DOCUMENTATION.md")
+    documentation_instructions = prompt_manager.get("documentation_instructions.jinja2")
+
+    documentation_response = await generate(
+        model=flow_options.core_model,
+        context=shared_context,  # Use shared context for caching
+        messages=AIMessages([documentation_instructions]),  # Only instructions, no data
+        options=ModelOptions(reasoning_effort="high"),
+    )
+    documentation_content = str(documentation_response).strip()
+
+    # Generate DEVELOPER_GUIDE
+    logger.info("Generating DEVELOPER_GUIDE.md")
+    developer_guide_instructions = prompt_manager.get("developer_guide_instructions.jinja2")
+
     developer_guide_response = await generate(
         model=flow_options.core_model,
-        messages=AIMessages([developer_guide_prompt]),
+        context=shared_context,  # Use shared context for caching
+        messages=AIMessages([developer_guide_instructions]),  # Only instructions, no data
         options=ModelOptions(reasoning_effort="high"),
     )
     developer_guide_content = str(developer_guide_response).strip()

@@ -1,34 +1,39 @@
 """Flow options configuration for documentation generation."""
 
-from dataclasses import dataclass, field
-
-from ai_pipeline_core.llm import ModelName
-
-DEFAULT_CORE_MODEL: ModelName | str = "gemini-2.5-pro"
-DEFAULT_SMALL_MODEL: ModelName | str = "gemini-2.5-flash"
-DEFAULT_SUPPORTING_MODELS: list[ModelName | str] = ["gemini-2.5-flash"]
+from ai_pipeline_core import FlowOptions, ModelName
+from pydantic import Field
 
 
-@dataclass
-class FlowOptions:
-    """Options to be provided to each flow.
+class ProjectFlowOptions(FlowOptions):
+    """Options to be provided to each flow in the documentation writer pipeline.
 
-    Attributes:
-        core_model: Primary model for complex tasks
-        small_model: Lightweight model for simple tasks
-        supporting_models: Additional models for planning and reviewing
-        batch_max_chars: Maximum total characters in a batch for summarization
-        batch_max_files: Maximum number of files in a batch for summarization
-        enable_file_filtering: Enable AI-powered file filtering for large projects
+    Extends the base FlowOptions with project-specific configuration.
     """
 
-    core_model: ModelName | str = DEFAULT_CORE_MODEL
-    small_model: ModelName | str = DEFAULT_SMALL_MODEL
-    supporting_models: list[ModelName | str] = field(
-        default_factory=lambda: DEFAULT_SUPPORTING_MODELS.copy()
-    )
-    batch_max_chars: int = 200_000  # 200K characters max per batch
-    batch_max_files: int = 50  # Maximum 50 files per batch
+    # Required project fields
+    target: str = Field(description="Target source: Git repository URL or local directory path")
+    branch: str | None = Field(default=None, description="Branch name for git repositories")
+    tag: str | None = Field(default=None, description="Tag name for git repositories")
+    instructions: str | None = Field(default=None, description="High-level instructions for the AI")
 
-    # File filtering options
-    enable_file_filtering: bool = True
+    # Override defaults from base class
+    core_model: ModelName | str = Field(default="gemini-2.5-pro")
+    small_model: ModelName | str = Field(default="gemini-2.5-flash")
+
+    # Additional configuration
+    supporting_models: list[ModelName | str] = Field(
+        default_factory=lambda: ["gemini-2.5-flash"],
+        description="Additional models for planning and reviewing",
+    )
+    batch_max_chars: int = Field(
+        default=200_000,
+        description="Maximum total characters in a batch for summarization",
+    )
+    batch_max_files: int = Field(
+        default=50,
+        description="Maximum number of files in a batch for summarization",
+    )
+    enable_file_filtering: bool = Field(
+        default=True,
+        description="Enable AI-powered file filtering for large projects",
+    )

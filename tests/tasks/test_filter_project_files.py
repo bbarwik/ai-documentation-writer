@@ -2,7 +2,7 @@
 
 import pytest
 
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 from ai_documentation_writer.tasks.filter_project_files.filter_project_files import (
     apply_filters,
     format_size,
@@ -170,7 +170,8 @@ package.json
 README.md
         """.strip()
 
-        flow_options = FlowOptions(
+        flow_options = ProjectFlowOptions(
+            target="test-project",
             enable_file_filtering=True,
         )
 
@@ -220,7 +221,8 @@ README.md
 
         file_tree = "src/\ntests/\nvendor/\ndocs/\nREADME.md"
 
-        flow_options = FlowOptions(
+        flow_options = ProjectFlowOptions(
+            target="test-project",
             enable_file_filtering=True,
         )
 

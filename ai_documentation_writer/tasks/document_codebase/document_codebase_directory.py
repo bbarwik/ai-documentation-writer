@@ -2,11 +2,10 @@
 
 from typing import Optional
 
+from ai_pipeline_core import pipeline_task
 from ai_pipeline_core.llm import AIMessages, ModelOptions, generate_structured
 from ai_pipeline_core.logging import get_pipeline_logger
 from ai_pipeline_core.prompt_manager import PromptManager
-from ai_pipeline_core.tracing import trace
-from prefect import task
 from pydantic import BaseModel, Field
 
 from ai_documentation_writer.documents.flow.codebase_documentation import (
@@ -14,7 +13,7 @@ from ai_documentation_writer.documents.flow.codebase_documentation import (
     FileAnalysis,
     SingleDirectoryAnalysis,
 )
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 
 
 class DirectoryAndFilesAnalysis(BaseModel):
@@ -133,14 +132,13 @@ def directory_summaries_to_ai_messages(summaries: list[DirectoryAnalysis]) -> AI
     return AIMessages(messages)
 
 
-@task
-@trace
+@pipeline_task
 async def document_codebase_directory_task(
     dir_path: str,
     files_in_dir: dict[str, str],
     subdirectory_summaries: list[DirectoryAnalysis],
     common_context: AIMessages,
-    flow_options: FlowOptions,
+    flow_options: ProjectFlowOptions,
 ) -> DirectoryAnalysis:
     """Document a single directory with its files and subdirectories.
 

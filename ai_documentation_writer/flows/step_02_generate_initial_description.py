@@ -1,16 +1,12 @@
 """Flow for generating initial project description."""
 
-from ai_pipeline_core.documents import DocumentList
-from ai_pipeline_core.flow import FlowConfig
-from ai_pipeline_core.logging import get_pipeline_logger
-from ai_pipeline_core.tracing import trace
-from prefect import flow
+from ai_pipeline_core import DocumentList, FlowConfig, get_pipeline_logger, pipeline_flow
 
 from ai_documentation_writer.documents.flow.project_files import ProjectFilesDocument
 from ai_documentation_writer.documents.flow.project_initial_description import (
     ProjectInitialDescriptionDocument,
 )
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 from ai_documentation_writer.tasks.generate_initial_description import (
     generate_initial_description_task,
 )
@@ -25,10 +21,9 @@ class GenerateInitialDescriptionConfig(FlowConfig):
     OUTPUT_DOCUMENT_TYPE = ProjectInitialDescriptionDocument
 
 
-@flow(flow_run_name="generate_initial_description-{project_name}")
-@trace
+@pipeline_flow
 async def generate_initial_description(
-    project_name: str, documents: DocumentList, flow_options: FlowOptions = FlowOptions()
+    project_name: str, documents: DocumentList, flow_options: ProjectFlowOptions
 ) -> DocumentList:
     """Generate initial project description using AI analysis.
 

@@ -3,17 +3,14 @@
 import asyncio
 from pathlib import Path
 
-from ai_pipeline_core.logging import get_pipeline_logger
-from ai_pipeline_core.tracing import trace
-from prefect import task
+from ai_pipeline_core import get_pipeline_logger, pipeline_task
 
 from ai_documentation_writer.documents.flow.user_input import UserInputData
 
 logger = get_pipeline_logger(__name__)
 
 
-@task
-@trace
+@pipeline_task
 async def clone_repository_task(
     user_input: UserInputData,
     temp_dir: Path,

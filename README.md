@@ -1,6 +1,6 @@
 # AI Documentation Writer (Preview Release)
 
-> ⚠️ **Preview Release**: This is an early preview version (v0.1.0). While functional, expect breaking changes in future releases.
+> ⚠️ **Preview Release**: This is an early preview version (v0.1.1). While functional, expect breaking changes in future releases.
 
 Automatically generate comprehensive documentation for any Git repository or local codebase using AI-powered analysis and structured document generation.
 

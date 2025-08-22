@@ -1,5 +1,6 @@
 """Task for generating initial project description using AI."""
 
+from ai_pipeline_core import pipeline_task
 from ai_pipeline_core.llm import (
     AIMessages,
     ModelOptions,
@@ -8,8 +9,6 @@ from ai_pipeline_core.llm import (
 )
 from ai_pipeline_core.logging import get_pipeline_logger
 from ai_pipeline_core.prompt_manager import PromptManager
-from ai_pipeline_core.tracing import trace
-from prefect import task
 
 from ai_documentation_writer.documents.flow.project_files import (
     ProjectFilesData,
@@ -19,7 +18,7 @@ from ai_documentation_writer.documents.flow.project_initial_description import (
     ProjectInitialDescriptionDocument,
     ProjectInitialDescriptionEnum,
 )
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 
 from .models import SelectedFiles
 
@@ -29,11 +28,10 @@ prompt_manager = PromptManager(__file__)
 MAX_ITERATIONS = 5
 
 
-@task
-@trace
+@pipeline_task
 async def generate_initial_description_task(
     project_files_doc: ProjectFilesDocument,
-    flow_options: FlowOptions,
+    flow_options: ProjectFlowOptions,
 ) -> ProjectInitialDescriptionDocument:
     """Generate initial project description using iterative AI analysis.
 

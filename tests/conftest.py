@@ -3,8 +3,7 @@
 import asyncio
 
 import pytest
-from prefect.logging import disable_run_logger
-from prefect.testing.utilities import prefect_test_harness
+from ai_pipeline_core import disable_run_logger, prefect_test_harness
 
 
 @pytest.fixture(autouse=True, scope="session")

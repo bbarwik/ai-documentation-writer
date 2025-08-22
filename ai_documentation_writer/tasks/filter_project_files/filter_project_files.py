@@ -3,13 +3,12 @@
 import re
 from pathlib import Path
 
+from ai_pipeline_core import pipeline_task
 from ai_pipeline_core.llm import AIMessages, ModelOptions, generate_structured
 from ai_pipeline_core.logging import get_pipeline_logger
 from ai_pipeline_core.prompt_manager import PromptManager
-from ai_pipeline_core.tracing import trace
-from prefect import task
 
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 
 from .models import FileFilterDecision
 
@@ -154,13 +153,12 @@ def format_size(size_bytes: int) -> str:
     return f"{size_float:.1f}MB"
 
 
-@task
-@trace
+@pipeline_task
 async def filter_project_files_task(
     file_tree: str,
     files_dict: dict[str, str],
     max_all_files_size: int,
-    flow_options: FlowOptions,
+    flow_options: ProjectFlowOptions,
 ) -> dict[str, str]:
     """Filter out unnecessary files using AI analysis."""
     original_count = len(files_dict)

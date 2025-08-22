@@ -3,17 +3,14 @@
 import json
 from pathlib import Path
 
-from ai_pipeline_core.documents import Document
-from ai_pipeline_core.logging import get_pipeline_logger
-from ai_pipeline_core.tracing import trace
-from prefect import task
+from ai_pipeline_core import Document, get_pipeline_logger, pipeline_task
 
 from ai_documentation_writer.documents.flow.project_files import (
     ProjectFilesData,
     ProjectFilesDocument,
     ProjectFilesEnum,
 )
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 from ai_documentation_writer.tasks.filter_project_files import filter_project_files_task
 
 logger = get_pipeline_logger(__name__)
@@ -84,12 +81,11 @@ def is_text_file(file_path: Path, max_size: int) -> tuple[bool, str | None]:
         return False, None
 
 
-@task
-@trace
+@pipeline_task
 async def select_project_files_task(
     project_dir: Path,
     user_instructions: str | None,
-    flow_options: FlowOptions,
+    flow_options: ProjectFlowOptions,
 ) -> ProjectFilesDocument:
     """Select text files from a project directory.
 

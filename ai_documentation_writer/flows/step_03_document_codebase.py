@@ -1,10 +1,6 @@
 """Flow for documenting the entire codebase."""
 
-from ai_pipeline_core.documents import DocumentList
-from ai_pipeline_core.flow import FlowConfig
-from ai_pipeline_core.logging import get_pipeline_logger
-from ai_pipeline_core.tracing import trace
-from prefect import flow
+from ai_pipeline_core import DocumentList, FlowConfig, get_pipeline_logger, pipeline_flow
 
 from ai_documentation_writer.documents.flow.codebase_documentation import (
     CodebaseDocumentationDocument,
@@ -13,7 +9,7 @@ from ai_documentation_writer.documents.flow.project_files import ProjectFilesDoc
 from ai_documentation_writer.documents.flow.project_initial_description import (
     ProjectInitialDescriptionDocument,
 )
-from ai_documentation_writer.flow_options import FlowOptions
+from ai_documentation_writer.flow_options import ProjectFlowOptions
 from ai_documentation_writer.tasks.document_codebase import document_codebase_task
 
 logger = get_pipeline_logger(__name__)
@@ -26,10 +22,9 @@ class DocumentCodebaseConfig(FlowConfig):
     OUTPUT_DOCUMENT_TYPE = CodebaseDocumentationDocument
 
 
-@flow(flow_run_name="document_codebase-{project_name}")
-@trace
+@pipeline_flow
 async def document_codebase(
-    project_name: str, documents: DocumentList, flow_options: FlowOptions = FlowOptions()
+    project_name: str, documents: DocumentList, flow_options: ProjectFlowOptions
 ) -> DocumentList:
     """Document the entire codebase with file and directory summaries.
 
